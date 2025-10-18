@@ -21,7 +21,167 @@ Through this project, we aim to create a robust system that allows users to brow
 - **Apply Best Security Practices**: Incorporate authentication, authorization, data encryption, and other security measures to create a production-ready application.
 
 ## Tech Stack
+## 💻 Technology Stack
 
+### Frontend
+**React**
+- **Purpose**: A JavaScript library for building dynamic and interactive user interfaces
+- **Why**: Provides component-based architecture for reusable UI elements and efficient rendering with virtual DOM
+- **Use Case**: Building the client-side interface for property browsing, booking flows, and user dashboards
+
+**TypeScript**
+- **Purpose**: Typed superset of JavaScript that compiles to plain JavaScript
+- **Why**: Adds static typing to catch errors early and improve code quality and maintainability
+- **Use Case**: Ensuring type safety across the frontend codebase
+
+**Tailwind CSS**
+- **Purpose**: Utility-first CSS framework for rapid UI development
+- **Why**: Enables fast, responsive design with minimal custom CSS
+- **Use Case**: Styling components, creating responsive layouts, and maintaining consistent design
+
+**Next.js** (Optional)
+- **Purpose**: React framework for server-side rendering and static site generation
+- **Why**: Improves SEO, performance, and provides built-in routing
+- **Use Case**: Server-side rendering of property listings for better search engine visibility
+
+### Backend
+**Django**
+- **Purpose**: High-level Python web framework for rapid development
+- **Why**: Follows the "batteries-included" philosophy with built-in features for authentication, ORM, admin panel, and security
+- **Use Case**: Building RESTful APIs, handling business logic, user authentication, and managing the application backend
+
+**Django REST Framework (DRF)**
+- **Purpose**: Powerful toolkit for building Web APIs in Django
+- **Why**: Provides serialization, authentication, viewsets, and browsable API interface
+- **Use Case**: Creating RESTful API endpoints for CRUD operations on properties, bookings, and user data
+
+**GraphQL (with Graphene-Django)**
+- **Purpose**: Query language for APIs that allows clients to request exactly what they need
+- **Why**: Reduces over-fetching and under-fetching of data, provides a single endpoint for all queries
+- **Use Case**: Flexible data fetching for complex queries like property searches with multiple filters
+
+**Celery**
+- **Purpose**: Distributed task queue for handling asynchronous operations
+- **Why**: Offloads time-consuming tasks from the main application thread
+- **Use Case**: Sending email notifications, processing payments, generating reports, and scheduled tasks
+
+### Database
+**PostgreSQL**
+- **Purpose**: Advanced open-source relational database management system
+- **Why**: Offers robust ACID compliance, complex queries, JSON support, and excellent performance
+- **Use Case**: Storing structured data including users, properties, bookings, reviews, and transactions
+
+**MySQL** (Alternative)
+- **Purpose**: Popular open-source relational database
+- **Why**: Reliable, well-documented, and widely supported
+- **Use Case**: Alternative to PostgreSQL for storing application data
+
+**Redis**
+- **Purpose**: In-memory data structure store used as cache and message broker
+- **Why**: Extremely fast data access and temporary data storage
+- **Use Case**: Caching frequently accessed data (property listings), session management, and Celery message broker
+
+### Authentication & Security
+**JWT (JSON Web Tokens)**
+- **Purpose**: Compact, URL-safe token format for securely transmitting information
+- **Why**: Stateless authentication that scales well for distributed systems
+- **Use Case**: User authentication and authorization across API requests
+
+**OAuth 2.0**
+- **Purpose**: Industry-standard authorization framework
+- **Why**: Allows secure third-party access without sharing passwords
+- **Use Case**: Social login with Google, Facebook, and other providers
+
+**Django Security Middleware**
+- **Purpose**: Built-in Django security features
+- **Why**: Protects against common vulnerabilities (XSS, CSRF, SQL injection, clickjacking)
+- **Use Case**: Securing all API endpoints and user data
+
+### Payment Integration
+**Stripe API**
+- **Purpose**: Payment processing platform
+- **Why**: Secure, developer-friendly, and supports multiple payment methods
+- **Use Case**: Processing booking payments, handling refunds, and managing payouts to property owners
+
+### File Storage
+**AWS S3 (Amazon Simple Storage Service)**
+- **Purpose**: Cloud-based object storage service
+- **Why**: Scalable, durable, and cost-effective storage for large files
+- **Use Case**: Storing property images, user profile photos, and uploaded documents
+
+**Cloudinary** (Alternative)
+- **Purpose**: Cloud-based image and video management service
+- **Why**: Automatic image optimization and transformation
+- **Use Case**: Managing and delivering property images with dynamic resizing
+
+### DevOps & Deployment
+**Docker**
+- **Purpose**: Platform for developing, shipping, and running applications in containers
+- **Why**: Ensures consistency across development, testing, and production environments
+- **Use Case**: Containerizing the application and its dependencies for easy deployment
+
+**Docker Compose**
+- **Purpose**: Tool for defining and running multi-container Docker applications
+- **Why**: Simplifies the orchestration of multiple services (app, database, cache)
+- **Use Case**: Local development environment setup
+
+**GitHub Actions**
+- **Purpose**: CI/CD platform integrated with GitHub
+- **Why**: Automates testing, building, and deployment workflows
+- **Use Case**: Running automated tests on every commit, deploying to staging/production
+
+**Nginx**
+- **Purpose**: High-performance web server and reverse proxy
+- **Why**: Efficiently serves static files and acts as a load balancer
+- **Use Case**: Serving frontend assets and proxying requests to the Django backend
+
+**Gunicorn**
+- **Purpose**: Python WSGI HTTP server for UNIX
+- **Why**: Production-grade server for running Django applications
+- **Use Case**: Serving the Django application in production
+
+### Monitoring & Logging
+**Sentry**
+- **Purpose**: Error tracking and performance monitoring platform
+- **Why**: Real-time error reporting and debugging
+- **Use Case**: Tracking application errors and performance issues in production
+
+**Prometheus & Grafana** (Optional)
+- **Purpose**: Monitoring and alerting toolkit with visualization
+- **Why**: Provides metrics collection and beautiful dashboards
+- **Use Case**: Monitoring system health, API performance, and database metrics
+
+### Testing
+**Pytest**
+- **Purpose**: Python testing framework
+- **Why**: Simple syntax, powerful features, and extensive plugin ecosystem
+- **Use Case**: Writing and running backend unit and integration tests
+
+**Jest**
+- **Purpose**: JavaScript testing framework
+- **Why**: Fast, feature-rich, and works well with React
+- **Use Case**: Testing frontend components and logic
+
+**Selenium** (Optional)
+- **Purpose**: Browser automation tool
+- **Why**: Enables end-to-end testing in real browsers
+- **Use Case**: Automated testing of complete user workflows
+
+### Additional Tools
+**Git & GitHub**
+- **Purpose**: Version control system and collaboration platform
+- **Why**: Track changes, collaborate with team members, and manage code reviews
+- **Use Case**: Source code management and team collaboration
+
+**Postman**
+- **Purpose**: API development and testing tool
+- **Why**: Simplifies API testing and documentation
+- **Use Case**: Testing API endpoints during development
+
+**VS Code**
+- **Purpose**: Lightweight but powerful source code editor
+- **Why**: Extensive extensions, debugging support, and Git integration
+- **Use Case**: Primary development environment for coding
 ## 👥 Team Roles and Responsibilities
 
 ### Project Manager (PM)
