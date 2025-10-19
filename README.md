@@ -292,6 +292,117 @@ Through this project, we aim to create a robust system that allows users to brow
 - **Stripe API**: Payment processing integration
 - **AWS S3**: Cloud storage for images and media files
 
+## 🗄️ Database Design
+
+This section outlines the database structure for the Airbnb Clone project, including the key entities, their attributes, and relationships.
+
+### Entities and Attributes
+
+#### **User**
+Represents users of the platform (both guests and hosts).
+
+**Key Fields:**
+- `user_id` - Unique identifier for each user
+- `email` - User's email address (unique)
+- `password` - Hashed password for authentication
+- `first_name` - User's first name
+- `last_name` - User's last name
+- `phone_number` - Contact phone number
+- `profile_picture` - URL to user's profile image
+- `is_host` - Boolean indicating if user is a host
+
+**Relationships:**
+- A User can have multiple Properties (as a host)
+- A User can make multiple Bookings (as a guest)
+- A User can write multiple Reviews
+
+---
+
+#### **Property**
+Represents rental properties listed on the platform.
+
+**Key Fields:**
+- `property_id` - Unique identifier for each property
+- `host_id` - Foreign key referencing the User who owns the property
+- `title` - Property listing title
+- `description` - Detailed description of the property
+- `location` - Property address
+- `price_per_night` - Nightly rental price
+- `amenities` - List of amenities (e.g., WiFi, pool, parking)
+- `availability` - Availability status
+
+**Relationships:**
+- A Property belongs to one User (host)
+- A Property can have multiple Bookings
+- A Property can have multiple Reviews
+
+---
+
+#### **Booking**
+Represents a reservation made by a guest.
+
+**Key Fields:**
+- `booking_id` - Unique identifier for each booking
+- `property_id` - Foreign key referencing the Property
+- `user_id` - Foreign key referencing the User (guest)
+- `check_in_date` - Start date of the booking
+- `check_out_date` - End date of the booking
+- `total_price` - Total cost of the booking
+- `status` - Booking status (pending, confirmed, cancelled, completed)
+
+**Relationships:**
+- A Booking belongs to one Property
+- A Booking belongs to one User (guest)
+- A Booking has one Payment
+
+---
+
+#### **Review**
+Represents reviews left by guests for properties.
+
+**Key Fields:**
+- `review_id` - Unique identifier for each review
+- `property_id` - Foreign key referencing the Property
+- `user_id` - Foreign key referencing the User who wrote the review
+- `rating` - Numerical rating (e.g., 1-5 stars)
+- `comment` - Text content of the review
+- `created_at` - Timestamp when review was created
+
+**Relationships:**
+- A Review belongs to one Property
+- A Review belongs to one User
+- A Review is associated with one Booking
+
+---
+
+#### **Payment**
+Represents payment transactions for bookings.
+
+**Key Fields:**
+- `payment_id` - Unique identifier for each payment
+- `booking_id` - Foreign key referencing the Booking
+- `amount` - Payment amount
+- `payment_method` - Method of payment (credit card, PayPal, etc.)
+- `payment_status` - Status of payment (pending, completed, failed)
+- `transaction_id` - External transaction reference
+- `payment_date` - Timestamp of when payment was made
+
+**Relationships:**
+- A Payment belongs to one Booking
+- A Payment is made by one User
+
+---
+
+### Relationships Summary
+
+- **User → Property**: One-to-Many (A user can own multiple properties)
+- **User → Booking**: One-to-Many (A user can make multiple bookings)
+- **User → Review**: One-to-Many (A user can write multiple reviews)
+- **Property → Booking**: One-to-Many (A property can have multiple bookings)
+- **Property → Review**: One-to-Many (A property can have multiple reviews)
+- **Booking → Payment**: One-to-One (Each booking has one payment)
+- **Booking → Review**: One-to-One (Each booking can have one review)
+
 ## Key Features
 
 - User registration and authentication
