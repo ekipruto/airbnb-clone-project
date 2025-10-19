@@ -403,6 +403,80 @@ Represents payment transactions for bookings.
 - **Booking → Payment**: One-to-One (Each booking has one payment)
 - **Booking → Review**: One-to-One (Each booking can have one review)
 
+## ✨ Feature Breakdown
+
+This section provides an overview of the key features of the Airbnb Clone project, detailing how each feature contributes to the overall functionality of the platform.
+
+### 1. User Management
+**Description:**  
+This feature handles user registration, login, authentication, and profile management for both guests and hosts. Users can create accounts, update their personal information, upload profile pictures, and manage their authentication credentials securely. This is the foundation of the platform, ensuring that each user has a personalized and secure experience while accessing the system.
+
+---
+
+### 2. Property Management
+**Description:**  
+Property management allows hosts to create, update, and delete property listings on the platform. Hosts can add detailed information such as property descriptions, pricing, location, amenities, photos, and availability calendars. This feature is essential for building the marketplace inventory and providing guests with comprehensive information to make informed booking decisions.
+
+---
+
+### 3. Search and Filtering
+**Description:**  
+This feature enables guests to search for properties based on various criteria such as location, price range, number of guests, dates, and amenities. Advanced filtering options help users quickly narrow down results to find properties that match their specific needs. A robust search system is critical for user satisfaction and ensures guests can easily discover suitable accommodations.
+
+---
+
+### 4. Booking System
+**Description:**  
+The booking system allows guests to reserve properties for specific dates, view availability calendars, and receive booking confirmations. It manages the entire booking lifecycle including booking creation, modification, cancellation, and status tracking (pending, confirmed, completed, cancelled). This is the core transactional feature that enables the platform's primary business function of connecting guests with properties.
+
+---
+
+### 5. Payment Integration
+**Description:**  
+This feature handles secure payment processing for bookings using integrated payment gateways like Stripe or PayPal. It manages payment authorization, capture, refunds, and maintains transaction records for both guests and hosts. Secure and reliable payment processing is crucial for building trust and ensuring smooth financial transactions on the platform.
+
+---
+
+### 6. Review and Rating System
+**Description:**  
+The review system allows guests to leave ratings and written feedback for properties after their stay, helping future guests make informed decisions. Hosts can also view and respond to reviews, creating transparency and accountability within the platform. This feature builds trust in the community and helps maintain quality standards across all listings.
+
+---
+
+### 7. Notifications System
+**Description:**  
+This feature sends real-time notifications to users about important events such as booking confirmations, payment receipts, check-in reminders, new messages, and review requests. Notifications can be delivered via email, SMS, or in-app alerts. Keeping users informed enhances engagement and ensures they don't miss critical updates about their bookings or listings.
+
+---
+
+### 8. Admin Dashboard
+**Description:**  
+The admin dashboard provides platform administrators with tools to monitor and manage the entire system, including user accounts, property listings, bookings, payments, and reported issues. Admins can view analytics, generate reports, handle disputes, and perform moderation tasks. This feature is essential for maintaining platform integrity, resolving issues, and making data-driven decisions.
+
+---
+
+### 9. Messaging System
+**Description:**  
+A built-in messaging system enables direct communication between guests and hosts to discuss property details, ask questions, or coordinate check-in arrangements. Real-time or asynchronous messaging helps facilitate smooth transactions and builds relationships between users. Clear communication channels reduce misunderstandings and improve the overall user experience.
+
+---
+
+### 10. Photo Management
+**Description:**  
+This feature allows hosts to upload, organize, and manage multiple high-quality photos for their property listings. Guests can view photo galleries to get a comprehensive visual understanding of the property before booking. High-quality images are crucial for attracting guests and setting accurate expectations about the property.
+
+---
+
+### 11. Availability Calendar
+**Description:**  
+The availability calendar displays property booking status across dates, allowing hosts to block unavailable dates and guests to see when properties can be booked. It prevents double bookings and provides a visual interface for managing property availability. This feature is fundamental for efficient inventory management and preventing scheduling conflicts.
+
+---
+
+### 12. User Authentication and Authorization
+**Description:**  
+This security feature manages user access control, ensuring that users can only perform actions they're authorized to do (e.g., hosts can edit their own properties, guests can cancel their own bookings). It implements secure authentication using JWT tokens or session management and enforces role-based permissions throughout the application. Proper authentication and authorization protect user data and maintain platform security.
+
 ## Key Features
 
 - User registration and authentication
