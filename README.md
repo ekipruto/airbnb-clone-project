@@ -477,7 +477,7 @@ The availability calendar displays property booking status across dates, allowin
 **Description:**  
 This security feature manages user access control, ensuring that users can only perform actions they're authorized to do (e.g., hosts can edit their own properties, guests can cancel their own bookings). It implements secure authentication using JWT tokens or session management and enforces role-based permissions throughout the application. Proper authentication and authorization protect user data and maintain platform security.
 
-## 🔒 API Security Overview
+## 🔒 API Security
 
 Security is a critical aspect of the Airbnb Clone project. This section outlines the key security measures that will be implemented to protect user data, ensure secure transactions, and maintain the integrity of the platform.
 
