@@ -477,6 +477,133 @@ The availability calendar displays property booking status across dates, allowin
 **Description:**  
 This security feature manages user access control, ensuring that users can only perform actions they're authorized to do (e.g., hosts can edit their own properties, guests can cancel their own bookings). It implements secure authentication using JWT tokens or session management and enforces role-based permissions throughout the application. Proper authentication and authorization protect user data and maintain platform security.
 
+## 🔒 API Security Overview
+
+Security is a critical aspect of the Airbnb Clone project. This section outlines the key security measures that will be implemented to protect user data, ensure secure transactions, and maintain the integrity of the platform.
+
+---
+
+### 1. Authentication
+**Implementation:**  
+User authentication will be implemented using **JSON Web Tokens (JWT)** and **OAuth 2.0** for third-party login providers (Google, Facebook, etc.). When users log in, they receive a signed JWT token that must be included in subsequent API requests to verify their identity.
+
+**Why It's Crucial:**  
+Authentication ensures that only registered and verified users can access the platform's features. Without proper authentication, unauthorized users could impersonate others, access private data, make fraudulent bookings, or manipulate property listings. Protecting user accounts is the first line of defense in maintaining platform security and user trust.
+
+---
+
+### 2. Authorization
+**Implementation:**  
+Role-Based Access Control (RBAC) will be implemented to ensure users can only perform actions they are permitted to do. Authorization middleware will check user roles and permissions before allowing access to specific API endpoints (e.g., only hosts can edit their own properties, only admins can access the admin dashboard).
+
+**Why It's Crucial:**  
+Authorization prevents privilege escalation attacks where users might attempt to access resources or perform actions beyond their permissions. For example, without proper authorization, a guest could potentially modify another user's booking, delete property listings they don't own, or access sensitive payment information. This protects both user data and business operations.
+
+---
+
+### 3. Data Encryption
+**Implementation:**  
+All sensitive data will be encrypted both **in transit** (using HTTPS/TLS) and **at rest** (using database-level encryption). Passwords will be hashed using strong algorithms like **bcrypt** or **Argon2** before storage, and sensitive personal information will be encrypted in the database.
+
+**Why It's Crucial:**  
+Data encryption protects user information from being intercepted during transmission or accessed if the database is compromised. Without encryption, sensitive data like passwords, payment details, personal identification, and private messages could be exposed to attackers. This is essential for compliance with data protection regulations (GDPR, CCPA) and maintaining user trust.
+
+---
+
+### 4. Input Validation and Sanitization
+**Implementation:**  
+All user inputs will be validated on both client-side and server-side to ensure they meet expected formats and constraints. Input sanitization will be applied to prevent injection attacks by removing or escaping potentially harmful characters before processing data.
+
+**Why It's Crucial:**  
+Input validation prevents common security vulnerabilities such as SQL injection, Cross-Site Scripting (XSS), and command injection attacks. Attackers often exploit poorly validated inputs to inject malicious code, manipulate database queries, or execute unauthorized commands. Proper validation ensures that only safe, expected data is processed by the application.
+
+---
+
+### 5. Rate Limiting and Throttling
+**Implementation:**  
+API rate limiting will be implemented to restrict the number of requests a user or IP address can make within a specific time window (e.g., 100 requests per hour). This will be applied to sensitive endpoints like login, registration, and payment processing.
+
+**Why It's Crucial:**  
+Rate limiting protects against brute force attacks, credential stuffing, and Denial of Service (DoS) attacks. Without rate limiting, attackers could attempt thousands of login combinations to crack passwords, overwhelm the server with excessive requests causing downtime, or scrape large amounts of data. This measure ensures fair resource usage and maintains service availability for legitimate users.
+
+---
+
+### 6. CORS (Cross-Origin Resource Sharing) Policy
+**Implementation:**  
+CORS headers will be configured to allow requests only from trusted domains (the frontend application domain). This prevents unauthorized websites from making requests to the API on behalf of users.
+
+**Why It's Crucial:**  
+Proper CORS configuration prevents Cross-Site Request Forgery (CSRF) attacks where malicious websites could trick users' browsers into making unwanted requests to the API while they're authenticated. This protects users from having their accounts manipulated or data stolen through third-party sites.
+
+---
+
+### 7. HTTPS/SSL Encryption
+**Implementation:**  
+All API communications will be encrypted using HTTPS with SSL/TLS certificates. HTTP connections will be automatically redirected to HTTPS to ensure secure data transmission.
+
+**Why It's Crucial:**  
+HTTPS encryption prevents man-in-the-middle (MITM) attacks where attackers intercept network traffic to steal sensitive information like login credentials, session tokens, or payment details. This is especially critical for a booking platform where financial transactions occur and personal data is transmitted regularly.
+
+---
+
+### 8. Secure Payment Processing
+**Implementation:**  
+Payment processing will be handled through trusted third-party providers like **Stripe** or **PayPal**, which are PCI DSS compliant. The application will never store raw credit card numbers; instead, it will use tokenization where payment providers return secure tokens to represent payment methods.
+
+**Why It's Crucial:**  
+Secure payment processing is essential for protecting users' financial information and maintaining legal compliance. Payment data breaches can result in severe financial losses for users, legal penalties for the platform, loss of user trust, and damage to the platform's reputation. Using established payment processors reduces liability and ensures industry-standard security practices.
+
+---
+
+### 9. Security Headers
+**Implementation:**  
+HTTP security headers will be implemented including Content Security Policy (CSP), X-Content-Type-Options, X-Frame-Options, and Strict-Transport-Security. These headers will be configured in the web server (Nginx) and Django middleware.
+
+**Why It's Crucial:**  
+Security headers provide an additional layer of defense against common web vulnerabilities like clickjacking, MIME-type sniffing attacks, and XSS attacks. They instruct browsers on how to handle content and enforce security policies, making it harder for attackers to exploit client-side vulnerabilities.
+
+---
+
+### 10. Session Management
+**Implementation:**  
+Secure session management will be implemented with features like session expiration, secure cookie flags (HttpOnly, Secure, SameSite), and the ability to invalidate sessions on logout or password change. Sessions will be stored securely using Redis or database-backed sessions.
+
+**Why It's Crucial:**  
+Proper session management prevents session hijacking, session fixation, and unauthorized access through stolen session tokens. If sessions aren't properly secured, attackers could impersonate legitimate users by stealing their session IDs, gaining access to accounts without knowing passwords.
+
+---
+
+### 11. Database Security
+**Implementation:**  
+Database security will include using parameterized queries (via Django ORM) to prevent SQL injection, implementing proper database access controls with least privilege principles, regular backups with encryption, and separating database credentials from source code using environment variables.
+
+**Why It's Crucial:**  
+The database contains all critical application data including user credentials, personal information, booking details, and payment records. A compromised database could lead to massive data breaches, financial fraud, and complete system compromise. Protecting the database is fundamental to overall application security.
+
+---
+
+### 12. Logging and Monitoring
+**Implementation:**  
+Comprehensive logging will be implemented to track security events like failed login attempts, authorization failures, unusual activity patterns, and API errors. Logs will be monitored using tools like **Sentry** for error tracking and **Prometheus/Grafana** for performance monitoring.
+
+**Why It's Crucial:**  
+Logging and monitoring enable early detection of security incidents, suspicious activities, and potential breaches. Without proper logging, attacks could go unnoticed for extended periods, making it difficult to respond to threats, investigate incidents, or comply with security audit requirements. Real-time monitoring allows for rapid response to security threats.
+
+---
+
+### Security Best Practices Summary
+
+The Airbnb Clone project follows these security principles:
+
+- **Defense in Depth**: Multiple layers of security controls
+- **Principle of Least Privilege**: Users and services have minimal necessary permissions
+- **Secure by Default**: Security measures are built-in, not added as afterthoughts
+- **Regular Security Audits**: Periodic review and testing of security measures
+- **Security Updates**: Keeping all dependencies and frameworks up-to-date with security patches
+- **User Education**: Providing guidance on creating strong passwords and recognizing phishing attempts
+
+By implementing these comprehensive security measures, the Airbnb Clone platform ensures the protection of user data, secure financial transactions, and maintains the trust and confidence of both guests and hosts.
+
 ## Key Features
 
 - User registration and authentication
