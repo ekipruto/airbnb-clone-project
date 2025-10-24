@@ -292,106 +292,849 @@ Through this project, we aim to create a robust system that allows users to brow
 - **Stripe API**: Payment processing integration
 - **AWS S3**: Cloud storage for images and media files
 
-## 🗄️ Database Design
+# AirBnB Clone - Complete Database Design Guide
 
-This section outlines the database structure for the Airbnb Clone project, including the key entities, their attributes, and relationships.
-
-### Entities and Attributes
-
-#### **User**
-Represents users of the platform (both guests and hosts).
-
-**Key Fields:**
-- `user_id` - Unique identifier for each user
-- `email` - User's email address (unique)
-- `password` - Hashed password for authentication
-- `first_name` - User's first name
-- `last_name` - User's last name
-- `phone_number` - Contact phone number
-- `profile_picture` - URL to user's profile image
-- `is_host` - Boolean indicating if user is a host
-
-**Relationships:**
-- A User can have multiple Properties (as a host)
-- A User can make multiple Bookings (as a guest)
-- A User can write multiple Reviews
+## 📋 Project Context
+**Platform**: Full-stack booking system (like Airbnb)  
+**Backend**: Django + PostgreSQL  
+**Timeline**: October 13-20, 2025  
+**Key Features**: Property listings, bookings, reviews, payments, messaging
 
 ---
 
-#### **Property**
-Represents rental properties listed on the platform.
+## STEP 1: ENTITY-RELATIONSHIP (ER) DIAGRAM
 
-**Key Fields:**
-- `property_id` - Unique identifier for each property
-- `host_id` - Foreign key referencing the User who owns the property
-- `title` - Property listing title
-- `description` - Detailed description of the property
-- `location` - Property address
-- `price_per_night` - Nightly rental price
-- `amenities` - List of amenities (e.g., WiFi, pool, parking)
-- `availability` - Availability status
+### Phase 1A: Entity Identification
 
-**Relationships:**
-- A Property belongs to one User (host)
-- A Property can have multiple Bookings
-- A Property can have multiple Reviews
+Based on your README features, here are the **core entities**:
 
----
+#### **Primary Entities** (Must Have)
+1. ✅ **User** - Guests, hosts, and admins
+2. ✅ **Property** - Rental listings
+3. ✅ **Booking** - Reservations
+4. ✅ **Review** - Property ratings and feedback
+5. ✅ **Payment** - Transaction records
+6. ✅ **Message** - User-to-user communication
 
-#### **Booking**
-Represents a reservation made by a guest.
-
-**Key Fields:**
-- `booking_id` - Unique identifier for each booking
-- `property_id` - Foreign key referencing the Property
-- `user_id` - Foreign key referencing the User (guest)
-- `check_in_date` - Start date of the booking
-- `check_out_date` - End date of the booking
-- `total_price` - Total cost of the booking
-- `status` - Booking status (pending, confirmed, cancelled, completed)
-
-**Relationships:**
-- A Booking belongs to one Property
-- A Booking belongs to one User (guest)
-- A Booking has one Payment
+#### **Supporting Entities** (Enhance Functionality)
+7. ✅ **PropertyPhoto** - Property images
+8. ✅ **Amenity** - Property features (WiFi, pool, etc.)
+9. ✅ **Location** - Detailed property addresses
+10. ✅ **Notification** - User alerts
+11. ✅ **PropertyAvailability** - Calendar dates
+12. ✅ **Category** - Property types (apartment, villa, etc.)
 
 ---
 
-#### **Review**
-Represents reviews left by guests for properties.
+### Phase 1B: Complete Entity Attributes
 
-**Key Fields:**
-- `review_id` - Unique identifier for each review
-- `property_id` - Foreign key referencing the Property
-- `user_id` - Foreign key referencing the User who wrote the review
-- `rating` - Numerical rating (e.g., 1-5 stars)
-- `comment` - Text content of the review
-- `created_at` - Timestamp when review was created
+#### **1. USER Entity**
 
-**Relationships:**
-- A Review belongs to one Property
-- A Review belongs to one User
-- A Review is associated with one Booking
+```yaml
+Entity: User
+Purpose: Represents all platform users (guests, hosts, admins)
+
+Attributes:
+  Primary Key:
+    - user_id: UUID (Primary Key)
+  
+  Authentication:
+    - email: VARCHAR(255), UNIQUE, NOT NULL
+    - password_hash: VARCHAR(255), NOT NULL
+    - auth_provider: ENUM('local', 'google', 'facebook'), DEFAULT 'local'
+    - oauth_id: VARCHAR(255), NULLABLE (for social login)
+  
+  Personal Information:
+    - first_name: VARCHAR(100), NOT NULL
+    - last_name: VARCHAR(100), NOT NULL
+    - phone_number: VARCHAR(20), NULLABLE
+    - date_of_birth: DATE, NULLABLE
+    - profile_picture: VARCHAR(500), NULLABLE
+    - bio: TEXT, NULLABLE
+  
+  User Type & Status:
+    - role: ENUM('guest', 'host', 'admin'), DEFAULT 'guest'
+    - is_host: BOOLEAN, DEFAULT FALSE (for quick queries)
+    - is_verified: BOOLEAN, DEFAULT FALSE
+    - verification_token: VARCHAR(255), NULLABLE
+    - email_verified_at: TIMESTAMP, NULLABLE
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+    - last_login_at: TIMESTAMP, NULLABLE
+    - deleted_at: TIMESTAMP, NULLABLE (soft delete)
+
+Indexes:
+  - idx_user_email (email)
+  - idx_user_role (role)
+  - idx_user_oauth (auth_provider, oauth_id)
+
+Constraints:
+  - CHECK (email LIKE '%@%')
+  - CHECK (role IN ('guest', 'host', 'admin'))
+```
 
 ---
 
-#### **Payment**
-Represents payment transactions for bookings.
+#### **2. PROPERTY Entity**
 
-**Key Fields:**
-- `payment_id` - Unique identifier for each payment
-- `booking_id` - Foreign key referencing the Booking
-- `amount` - Payment amount
-- `payment_method` - Method of payment (credit card, PayPal, etc.)
-- `payment_status` - Status of payment (pending, completed, failed)
-- `transaction_id` - External transaction reference
-- `payment_date` - Timestamp of when payment was made
+```yaml
+Entity: Property
+Purpose: Represents rental properties listed by hosts
 
-**Relationships:**
-- A Payment belongs to one Booking
-- A Payment is made by one User
+Attributes:
+  Primary Key:
+    - property_id: UUID (Primary Key)
+  
+  Ownership:
+    - host_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+    - category_id: UUID, FOREIGN KEY → Category(category_id)
+  
+  Basic Information:
+    - title: VARCHAR(200), NOT NULL
+    - description: TEXT, NOT NULL
+    - slug: VARCHAR(250), UNIQUE (for SEO-friendly URLs)
+  
+  Property Details:
+    - max_guests: INTEGER, NOT NULL, CHECK (max_guests > 0)
+    - bedrooms: INTEGER, NOT NULL, CHECK (bedrooms >= 0)
+    - beds: INTEGER, NOT NULL, CHECK (beds > 0)
+    - bathrooms: DECIMAL(3,1), NOT NULL, CHECK (bathrooms > 0)
+  
+  Pricing:
+    - price_per_night: DECIMAL(10,2), NOT NULL, CHECK (price_per_night > 0)
+    - cleaning_fee: DECIMAL(10,2), DEFAULT 0
+    - service_fee_percentage: DECIMAL(5,2), DEFAULT 10.00
+    - currency: VARCHAR(3), DEFAULT 'USD'
+    - weekend_price: DECIMAL(10,2), NULLABLE (optional weekend pricing)
+  
+  Booking Rules:
+    - min_nights: INTEGER, DEFAULT 1
+    - max_nights: INTEGER, DEFAULT 365
+    - instant_book: BOOLEAN, DEFAULT FALSE
+    - cancellation_policy: ENUM('flexible', 'moderate', 'strict', 'super_strict'), DEFAULT 'moderate'
+  
+  Check-in/out:
+    - check_in_time: TIME, DEFAULT '15:00:00'
+    - check_out_time: TIME, DEFAULT '11:00:00'
+    - self_check_in: BOOLEAN, DEFAULT FALSE
+  
+  Status & Visibility:
+    - status: ENUM('draft', 'active', 'inactive', 'suspended'), DEFAULT 'draft'
+    - is_featured: BOOLEAN, DEFAULT FALSE
+    - views_count: INTEGER, DEFAULT 0
+    - bookings_count: INTEGER, DEFAULT 0
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+    - published_at: TIMESTAMP, NULLABLE
+    - deleted_at: TIMESTAMP, NULLABLE (soft delete)
+
+Indexes:
+  - idx_property_host (host_id)
+  - idx_property_status (status)
+  - idx_property_category (category_id)
+  - idx_property_price (price_per_night)
+  - idx_property_location (for spatial queries)
+  - idx_property_slug (slug)
+
+Constraints:
+  - CHECK (max_nights >= min_nights)
+  - CHECK (status IN ('draft', 'active', 'inactive', 'suspended'))
+  - UNIQUE (slug)
+```
 
 ---
+
+#### **3. CATEGORY Entity**
+
+```yaml
+Entity: Category
+Purpose: Property types (apartment, villa, cabin, etc.)
+
+Attributes:
+  Primary Key:
+    - category_id: UUID (Primary Key)
+  
+  Details:
+    - name: VARCHAR(100), UNIQUE, NOT NULL
+    - slug: VARCHAR(100), UNIQUE, NOT NULL
+    - description: TEXT
+    - icon: VARCHAR(100) (icon reference)
+    - display_order: INTEGER, DEFAULT 0
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP
+
+Indexes:
+  - idx_category_slug (slug)
+  - idx_category_order (display_order)
+```
+
+---
+
+#### **4. LOCATION Entity**
+
+```yaml
+Entity: Location
+Purpose: Detailed property addresses with GPS coordinates
+
+Attributes:
+  Primary Key:
+    - location_id: UUID (Primary Key)
+  
+  Reference:
+    - property_id: UUID, FOREIGN KEY → Property(property_id), UNIQUE, NOT NULL
+  
+  Address Components:
+    - address_line1: VARCHAR(255), NOT NULL
+    - address_line2: VARCHAR(255), NULLABLE
+    - city: VARCHAR(100), NOT NULL
+    - state_province: VARCHAR(100), NOT NULL
+    - country: VARCHAR(100), NOT NULL
+    - postal_code: VARCHAR(20)
+  
+  Geographic Coordinates:
+    - latitude: DECIMAL(10, 8), NOT NULL
+    - longitude: DECIMAL(11, 8), NOT NULL
+  
+  Additional Info:
+    - neighborhood: VARCHAR(100)
+    - directions: TEXT (how to reach the property)
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP
+
+Indexes:
+  - idx_location_property (property_id) - UNIQUE
+  - idx_location_city (city)
+  - idx_location_country (country)
+  - idx_location_coordinates (latitude, longitude) - SPATIAL INDEX
+
+Constraints:
+  - CHECK (latitude BETWEEN -90 AND 90)
+  - CHECK (longitude BETWEEN -180 AND 180)
+```
+
+---
+
+#### **5. AMENITY Entity**
+
+```yaml
+Entity: Amenity
+Purpose: Property features and facilities
+
+Attributes:
+  Primary Key:
+    - amenity_id: UUID (Primary Key)
+  
+  Details:
+    - name: VARCHAR(100), UNIQUE, NOT NULL
+    - icon: VARCHAR(100)
+    - category: ENUM('basic', 'entertainment', 'facilities', 'safety', 'accessibility')
+    - description: TEXT
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+
+Indexes:
+  - idx_amenity_category (category)
+```
+
+---
+
+#### **6. PROPERTY_AMENITY (Junction Table)**
+
+```yaml
+Entity: PropertyAmenity
+Purpose: Many-to-many relationship between Properties and Amenities
+
+Attributes:
+  Composite Primary Key:
+    - property_id: UUID, FOREIGN KEY → Property(property_id)
+    - amenity_id: UUID, FOREIGN KEY → Amenity(amenity_id)
+    - PRIMARY KEY (property_id, amenity_id)
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+
+Indexes:
+  - idx_prop_amenity_property (property_id)
+  - idx_prop_amenity_amenity (amenity_id)
+
+Constraints:
+  - ON DELETE CASCADE for both foreign keys
+```
+
+---
+
+#### **7. PROPERTY_PHOTO Entity**
+
+```yaml
+Entity: PropertyPhoto
+Purpose: Property images and photos
+
+Attributes:
+  Primary Key:
+    - photo_id: UUID (Primary Key)
+  
+  Reference:
+    - property_id: UUID, FOREIGN KEY → Property(property_id), NOT NULL
+  
+  Photo Details:
+    - url: VARCHAR(500), NOT NULL
+    - thumbnail_url: VARCHAR(500)
+    - caption: VARCHAR(255)
+    - is_cover: BOOLEAN, DEFAULT FALSE
+    - display_order: INTEGER, DEFAULT 0
+  
+  Metadata:
+    - file_size: INTEGER (in bytes)
+    - width: INTEGER
+    - height: INTEGER
+  
+  Timestamps:
+    - uploaded_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - deleted_at: TIMESTAMP, NULLABLE (soft delete)
+
+Indexes:
+  - idx_photo_property (property_id)
+  - idx_photo_cover (property_id, is_cover)
+  - idx_photo_order (property_id, display_order)
+
+Constraints:
+  - CHECK (display_order >= 0)
+```
+
+---
+
+#### **8. BOOKING Entity**
+
+```yaml
+Entity: Booking
+Purpose: Property reservations made by guests
+
+Attributes:
+  Primary Key:
+    - booking_id: UUID (Primary Key)
+  
+  References:
+    - property_id: UUID, FOREIGN KEY → Property(property_id), NOT NULL
+    - guest_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+  
+  Booking Dates:
+    - check_in_date: DATE, NOT NULL
+    - check_out_date: DATE, NOT NULL
+    - num_nights: INTEGER, GENERATED ALWAYS AS (check_out_date - check_in_date) STORED
+  
+  Guest Details:
+    - num_guests: INTEGER, NOT NULL, CHECK (num_guests > 0)
+    - num_adults: INTEGER, DEFAULT 1
+    - num_children: INTEGER, DEFAULT 0
+    - num_infants: INTEGER, DEFAULT 0
+  
+  Pricing Breakdown:
+    - base_price: DECIMAL(10,2), NOT NULL (price_per_night * num_nights)
+    - cleaning_fee: DECIMAL(10,2), DEFAULT 0
+    - service_fee: DECIMAL(10,2), NOT NULL
+    - tax_amount: DECIMAL(10,2), DEFAULT 0
+    - discount_amount: DECIMAL(10,2), DEFAULT 0
+    - total_price: DECIMAL(10,2), NOT NULL
+    - currency: VARCHAR(3), DEFAULT 'USD'
+  
+  Status Management:
+    - booking_status: ENUM('pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled', 'completed'), DEFAULT 'pending'
+    - payment_status: ENUM('pending', 'paid', 'refunded', 'failed'), DEFAULT 'pending'
+    - cancellation_reason: TEXT, NULLABLE
+    - cancelled_by: UUID, FOREIGN KEY → User(user_id), NULLABLE
+  
+  Special Requests:
+    - special_requests: TEXT
+    - arrival_time: TIME
+  
+  Confirmation:
+    - confirmation_code: VARCHAR(20), UNIQUE
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+    - confirmed_at: TIMESTAMP, NULLABLE
+    - cancelled_at: TIMESTAMP, NULLABLE
+    - completed_at: TIMESTAMP, NULLABLE
+
+Indexes:
+  - idx_booking_property (property_id)
+  - idx_booking_guest (guest_id)
+  - idx_booking_dates (check_in_date, check_out_date)
+  - idx_booking_status (booking_status)
+  - idx_booking_confirmation (confirmation_code)
+
+Constraints:
+  - CHECK (check_out_date > check_in_date)
+  - CHECK (num_guests = num_adults + num_children)
+  - CHECK (total_price >= 0)
+  - UNIQUE (confirmation_code)
+```
+
+---
+
+#### **9. PAYMENT Entity**
+
+```yaml
+Entity: Payment
+Purpose: Financial transaction records
+
+Attributes:
+  Primary Key:
+    - payment_id: UUID (Primary Key)
+  
+  References:
+    - booking_id: UUID, FOREIGN KEY → Booking(booking_id), NOT NULL
+    - payer_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+  
+  Payment Details:
+    - amount: DECIMAL(10,2), NOT NULL, CHECK (amount > 0)
+    - currency: VARCHAR(3), DEFAULT 'USD'
+    - payment_method: ENUM('credit_card', 'debit_card', 'paypal', 'stripe', 'bank_transfer')
+    - payment_type: ENUM('booking', 'refund', 'payout'), DEFAULT 'booking'
+  
+  Status:
+    - payment_status: ENUM('pending', 'processing', 'completed', 'failed', 'refunded'), DEFAULT 'pending'
+    - failure_reason: TEXT, NULLABLE
+  
+  External References:
+    - transaction_id: VARCHAR(255), UNIQUE (Stripe/PayPal ID)
+    - receipt_url: VARCHAR(500)
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - processed_at: TIMESTAMP, NULLABLE
+    - completed_at: TIMESTAMP, NULLABLE
+    - refunded_at: TIMESTAMP, NULLABLE
+
+Indexes:
+  - idx_payment_booking (booking_id)
+  - idx_payment_payer (payer_id)
+  - idx_payment_status (payment_status)
+  - idx_payment_transaction (transaction_id)
+
+Constraints:
+  - CHECK (amount > 0)
+  - UNIQUE (transaction_id)
+```
+
+---
+
+#### **10. REVIEW Entity**
+
+```yaml
+Entity: Review
+Purpose: Property ratings and feedback from guests
+
+Attributes:
+  Primary Key:
+    - review_id: UUID (Primary Key)
+  
+  References:
+    - booking_id: UUID, FOREIGN KEY → Booking(booking_id), UNIQUE, NOT NULL
+    - property_id: UUID, FOREIGN KEY → Property(property_id), NOT NULL
+    - reviewer_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+    - host_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+  
+  Overall Rating:
+    - overall_rating: DECIMAL(2,1), NOT NULL, CHECK (overall_rating BETWEEN 1.0 AND 5.0)
+  
+  Detailed Ratings:
+    - cleanliness_rating: INTEGER, CHECK (cleanliness_rating BETWEEN 1 AND 5)
+    - accuracy_rating: INTEGER, CHECK (accuracy_rating BETWEEN 1 AND 5)
+    - communication_rating: INTEGER, CHECK (communication_rating BETWEEN 1 AND 5)
+    - location_rating: INTEGER, CHECK (location_rating BETWEEN 1 AND 5)
+    - check_in_rating: INTEGER, CHECK (check_in_rating BETWEEN 1 AND 5)
+    - value_rating: INTEGER, CHECK (value_rating BETWEEN 1 AND 5)
+  
+  Review Content:
+    - comment: TEXT, NOT NULL
+    - response: TEXT, NULLABLE (host's response)
+    - response_at: TIMESTAMP, NULLABLE
+  
+  Visibility:
+    - is_visible: BOOLEAN, DEFAULT TRUE
+    - is_flagged: BOOLEAN, DEFAULT FALSE
+    - flagged_reason: TEXT, NULLABLE
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+Indexes:
+  - idx_review_booking (booking_id) - UNIQUE
+  - idx_review_property (property_id)
+  - idx_review_reviewer (reviewer_id)
+  - idx_review_host (host_id)
+  - idx_review_rating (overall_rating)
+  - idx_review_visible (is_visible)
+
+Constraints:
+  - CHECK (overall_rating BETWEEN 1.0 AND 5.0)
+  - UNIQUE (booking_id) - One review per booking
+```
+
+---
+
+#### **11. MESSAGE Entity**
+
+```yaml
+Entity: Message
+Purpose: Communication between users
+
+Attributes:
+  Primary Key:
+    - message_id: UUID (Primary Key)
+  
+  Participants:
+    - sender_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+    - recipient_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+    - booking_id: UUID, FOREIGN KEY → Booking(booking_id), NULLABLE
+  
+  Message Content:
+    - subject: VARCHAR(255)
+    - body: TEXT, NOT NULL
+    - attachment_url: VARCHAR(500), NULLABLE
+  
+  Status:
+    - is_read: BOOLEAN, DEFAULT FALSE
+    - is_archived: BOOLEAN, DEFAULT FALSE
+    - is_deleted_by_sender: BOOLEAN, DEFAULT FALSE
+    - is_deleted_by_recipient: BOOLEAN, DEFAULT FALSE
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - read_at: TIMESTAMP, NULLABLE
+
+Indexes:
+  - idx_message_sender (sender_id)
+  - idx_message_recipient (recipient_id)
+  - idx_message_booking (booking_id)
+  - idx_message_conversation (sender_id, recipient_id, created_at)
+  - idx_message_unread (recipient_id, is_read)
+
+Constraints:
+  - CHECK (sender_id != recipient_id)
+```
+
+---
+
+#### **12. NOTIFICATION Entity**
+
+```yaml
+Entity: Notification
+Purpose: System notifications to users
+
+Attributes:
+  Primary Key:
+    - notification_id: UUID (Primary Key)
+  
+  Reference:
+    - user_id: UUID, FOREIGN KEY → User(user_id), NOT NULL
+  
+  Notification Details:
+    - type: ENUM('booking_confirmed', 'booking_cancelled', 'payment_received', 'new_message', 'review_received', 'property_approved')
+    - title: VARCHAR(255), NOT NULL
+    - message: TEXT, NOT NULL
+    - action_url: VARCHAR(500) (link to relevant page)
+  
+  References (Optional):
+    - related_booking_id: UUID, FOREIGN KEY → Booking(booking_id), NULLABLE
+    - related_property_id: UUID, FOREIGN KEY → Property(property_id), NULLABLE
+    - related_user_id: UUID, FOREIGN KEY → User(user_id), NULLABLE
+  
+  Status:
+    - is_read: BOOLEAN, DEFAULT FALSE
+    - is_sent_email: BOOLEAN, DEFAULT FALSE
+    - is_sent_sms: BOOLEAN, DEFAULT FALSE
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - read_at: TIMESTAMP, NULLABLE
+
+Indexes:
+  - idx_notification_user (user_id)
+  - idx_notification_unread (user_id, is_read)
+  - idx_notification_type (type)
+  - idx_notification_created (created_at)
+```
+
+---
+
+#### **13. PROPERTY_AVAILABILITY Entity**
+
+```yaml
+Entity: PropertyAvailability
+Purpose: Property calendar and date-specific pricing
+
+Attributes:
+  Primary Key:
+    - availability_id: UUID (Primary Key)
+  
+  Reference:
+    - property_id: UUID, FOREIGN KEY → Property(property_id), NOT NULL
+  
+  Date Information:
+    - date: DATE, NOT NULL
+    - is_available: BOOLEAN, DEFAULT TRUE
+  
+  Custom Pricing:
+    - price_override: DECIMAL(10,2), NULLABLE (override base price for this date)
+    - min_nights_override: INTEGER, NULLABLE
+  
+  Timestamps:
+    - created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+    - updated_at: TIMESTAMP
+
+Indexes:
+  - idx_availability_property_date (property_id, date) - UNIQUE
+  - idx_availability_date (date)
+
+Constraints:
+  - UNIQUE (property_id, date)
+## STEP 2: DATABASE NORMALIZATION
+
+### Current Status Analysis
+
+**Your existing design is already in 3NF! Here's why:**
+
+✅ **1NF (First Normal Form)**
+- All attributes are atomic (no multi-valued fields)
+- Each column contains values of single type
+- No repeating groups
+
+✅ **2NF (Second Normal Form)**
+- No partial dependencies
+- All non-key attributes fully depend on primary key
+
+✅ **3NF (Third Normal Form)**
+- No transitive dependencies
+- Separate tables for related entities
+
+### Improvements Made to Original Design
+
+#### **Original Design Issues:**
+```
+❌ Property.amenities - storing comma-separated values
+❌ Property.location - storing full address in one field
+❌ Missing property photos management
+❌ Missing availability calendar
+❌ Missing notification system
+❌ Review tied only to property, not booking
+```
+
+#### **Normalized Solution:**
+```
+✅ PropertyAmenity junction table (M:N relationship)
+✅ Separate Location table (1:1 with proper indexing)
+✅ PropertyPhoto table with ordering
+✅ PropertyAvailability for calendar management
+✅ Notification table for system alerts
+✅ Review linked to booking for verification
+```
+
+---
+
+## STEP 3: SQL SCHEMA IMPLEMENTATION
+
+### Complete PostgreSQL Schema
+
+```sql
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- =====================================================
+-- TABLE 1: USERS
+-- =====================================================
+CREATE TABLE users (
+    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    auth_provider VARCHAR(20) DEFAULT 'local' CHECK (auth_provider IN ('local', 'google', 'facebook')),
+    oauth_id VARCHAR(255),
+    
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(20),
+    date_of_birth DATE,
+    profile_picture VARCHAR(500),
+    bio TEXT,
+    
+    role VARCHAR(20) DEFAULT 'guest' CHECK (role IN ('guest', 'host', 'admin')),
+    is_host BOOLEAN DEFAULT FALSE,
+    is_verified BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
+    email_verified_at TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    
+    CONSTRAINT check_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+CREATE INDEX idx_user_email ON users(email);
+CREATE INDEX idx_user_role ON users(role);
+CREATE INDEX idx_user_oauth ON users(auth_provider, oauth_id);
+CREATE INDEX idx_user_deleted ON users(deleted_at) WHERE deleted_at IS NULL;
+
+-- =====================================================
+-- TABLE 2: CATEGORIES
+-- =====================================================
+CREATE TABLE categories (
+    category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    icon VARCHAR(100),
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_category_slug ON categories(slug);
+CREATE INDEX idx_category_order ON categories(display_order);
+
+-- =====================================================
+-- TABLE 3: PROPERTIES
+-- =====================================================
+CREATE TABLE properties (
+    property_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    host_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    category_id UUID REFERENCES categories(category_id) ON DELETE SET NULL,
+    
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    slug VARCHAR(250) UNIQUE,
+    
+    max_guests INTEGER NOT NULL CHECK (max_guests > 0),
+    bedrooms INTEGER NOT NULL CHECK (bedrooms >= 0),
+    beds INTEGER NOT NULL CHECK (beds > 0),
+    bathrooms DECIMAL(3,1) NOT NULL CHECK (bathrooms > 0),
+    
+    price_per_night DECIMAL(10,2) NOT NULL CHECK (price_per_night > 0),
+    cleaning_fee DECIMAL(10,2) DEFAULT 0,
+    service_fee_percentage DECIMAL(5,2) DEFAULT 10.00,
+    currency VARCHAR(3) DEFAULT 'USD',
+    weekend_price DECIMAL(10,2),
+    
+    min_nights INTEGER DEFAULT 1,
+    max_nights INTEGER DEFAULT 365,
+    instant_book BOOLEAN DEFAULT FALSE,
+    cancellation_policy VARCHAR(20) DEFAULT 'moderate' CHECK (cancellation_policy IN ('flexible', 'moderate', 'strict', 'super_strict')),
+    
+    check_in_time TIME DEFAULT '15:00:00',
+    check_out_time TIME DEFAULT '11:00:00',
+    self_check_in BOOLEAN DEFAULT FALSE,
+    
+    status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'inactive', 'suspended')),
+    is_featured BOOLEAN DEFAULT FALSE,
+    views_count INTEGER DEFAULT 0,
+    bookings_count INTEGER DEFAULT 0,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    
+    CONSTRAINT check_nights CHECK (max_nights >= min_nights)
+);
+
+CREATE INDEX idx_property_host ON properties(host_id);
+CREATE INDEX idx_property_status ON properties(status);
+CREATE INDEX idx_property_category ON properties(category_id);
+CREATE INDEX idx_property_price ON properties(price_per_night);
+CREATE INDEX idx_property_slug ON properties(slug);
+CREATE INDEX idx_property_featured ON properties(is_featured) WHERE is_featured = TRUE;
+
+-- =====================================================
+-- TABLE 4: LOCATIONS
+-- =====================================================
+CREATE TABLE locations (
+    location_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    property_id UUID UNIQUE NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+    
+    address_line1 VARCHAR(255) NOT NULL,
+    address_line2 VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state_province VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(20),
+    
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    
+    neighborhood VARCHAR(100),
+    directions TEXT,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT check_latitude CHECK (latitude BETWEEN -90 AND 90),
+    CONSTRAINT check_longitude CHECK (longitude BETWEEN -180 AND 180)
+);
+
+CREATE INDEX idx_location_property ON locations(property_id);
+CREATE INDEX idx_location_city ON locations(city);
+CREATE INDEX idx_location_country ON locations(country);
+CREATE INDEX idx_location_coords ON locations USING GIST (ll_to_earth(latitude, longitude));
+
+-- =====================================================
+-- TABLE 5: AMENITIES
+-- =====================================================
+CREATE TABLE amenities (
+    amenity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    icon VARCHAR(100),
+    category VARCHAR(20) CHECK (category IN ('basic', 'entertainment', 'facilities', 'safety', 'accessibility')),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_amenity_category ON amenities(category);
+
+-- =====================================================
+-- TABLE 6: PROPERTY_AMENITIES (Junction Table)
+-- =====================================================
+CREATE TABLE property_amenities (
+    property_id UUID REFERENCES properties(property_id) ON DELETE CASCADE,
+    amenity_id UUID REFERENCES amenities(amenity_id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (property_id, amenity_id)
+);
+
+CREATE INDEX idx_prop_amenity_property ON property_amenities(property_id);
+CREATE INDEX idx_prop_amenity_amenity ON property_amenities(amenity_id);
+
+-- =====================================================
+-- TABLE 7: PROPERTY_PHOTOS
+-- =====================================================
+CREATE TABLE property_photos (
+    photo_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    property_id UUID NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+    
+    url VARCHAR(500) NOT NULL,
+    thumbnail_url VARCHAR(500),
+    caption VARCHAR(255),
+    is_cover BOOLEAN DEFAULT FALSE,
+    display_order INTEGER DEFAULT 0,
+    
+    file_size INTEGER,
+    width INTEGER,
+    height INTEGER,
+    
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete
 
 ### Relationships Summary
 
